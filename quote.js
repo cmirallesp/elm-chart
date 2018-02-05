@@ -2732,6 +2732,39 @@ var _elm_lang$core$Char$isHexDigit = function ($char) {
 		$char));
 };
 
+//import Result //
+
+var _elm_lang$core$Native_Date = function() {
+
+function fromString(str)
+{
+	var date = new Date(str);
+	return isNaN(date.getTime())
+		? _elm_lang$core$Result$Err('Unable to parse \'' + str + '\' as a date. Dates must be in the ISO 8601 format.')
+		: _elm_lang$core$Result$Ok(date);
+}
+
+var dayTable = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+var monthTable =
+	['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+	 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+
+return {
+	fromString: fromString,
+	year: function(d) { return d.getFullYear(); },
+	month: function(d) { return { ctor: monthTable[d.getMonth()] }; },
+	day: function(d) { return d.getDate(); },
+	hour: function(d) { return d.getHours(); },
+	minute: function(d) { return d.getMinutes(); },
+	second: function(d) { return d.getSeconds(); },
+	millisecond: function(d) { return d.getMilliseconds(); },
+	toTime: function(d) { return d.getTime(); },
+	fromTime: function(t) { return new Date(t); },
+	dayOfWeek: function(d) { return { ctor: dayTable[d.getDay()] }; }
+};
+
+}();
 //import Native.Utils //
 
 var _elm_lang$core$Native_Scheduler = function() {
@@ -5489,6 +5522,39 @@ var _elm_lang$core$Time$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
 
+var _elm_lang$core$Date$millisecond = _elm_lang$core$Native_Date.millisecond;
+var _elm_lang$core$Date$second = _elm_lang$core$Native_Date.second;
+var _elm_lang$core$Date$minute = _elm_lang$core$Native_Date.minute;
+var _elm_lang$core$Date$hour = _elm_lang$core$Native_Date.hour;
+var _elm_lang$core$Date$dayOfWeek = _elm_lang$core$Native_Date.dayOfWeek;
+var _elm_lang$core$Date$day = _elm_lang$core$Native_Date.day;
+var _elm_lang$core$Date$month = _elm_lang$core$Native_Date.month;
+var _elm_lang$core$Date$year = _elm_lang$core$Native_Date.year;
+var _elm_lang$core$Date$fromTime = _elm_lang$core$Native_Date.fromTime;
+var _elm_lang$core$Date$toTime = _elm_lang$core$Native_Date.toTime;
+var _elm_lang$core$Date$fromString = _elm_lang$core$Native_Date.fromString;
+var _elm_lang$core$Date$now = A2(_elm_lang$core$Task$map, _elm_lang$core$Date$fromTime, _elm_lang$core$Time$now);
+var _elm_lang$core$Date$Date = {ctor: 'Date'};
+var _elm_lang$core$Date$Sun = {ctor: 'Sun'};
+var _elm_lang$core$Date$Sat = {ctor: 'Sat'};
+var _elm_lang$core$Date$Fri = {ctor: 'Fri'};
+var _elm_lang$core$Date$Thu = {ctor: 'Thu'};
+var _elm_lang$core$Date$Wed = {ctor: 'Wed'};
+var _elm_lang$core$Date$Tue = {ctor: 'Tue'};
+var _elm_lang$core$Date$Mon = {ctor: 'Mon'};
+var _elm_lang$core$Date$Dec = {ctor: 'Dec'};
+var _elm_lang$core$Date$Nov = {ctor: 'Nov'};
+var _elm_lang$core$Date$Oct = {ctor: 'Oct'};
+var _elm_lang$core$Date$Sep = {ctor: 'Sep'};
+var _elm_lang$core$Date$Aug = {ctor: 'Aug'};
+var _elm_lang$core$Date$Jul = {ctor: 'Jul'};
+var _elm_lang$core$Date$Jun = {ctor: 'Jun'};
+var _elm_lang$core$Date$May = {ctor: 'May'};
+var _elm_lang$core$Date$Apr = {ctor: 'Apr'};
+var _elm_lang$core$Date$Mar = {ctor: 'Mar'};
+var _elm_lang$core$Date$Feb = {ctor: 'Feb'};
+var _elm_lang$core$Date$Jan = {ctor: 'Jan'};
+
 var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
 var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
@@ -6142,6 +6208,126 @@ var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive
 var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
 var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
+//import Maybe, Native.List //
+
+var _elm_lang$core$Native_Regex = function() {
+
+function escape(str)
+{
+	return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+function caseInsensitive(re)
+{
+	return new RegExp(re.source, 'gi');
+}
+function regex(raw)
+{
+	return new RegExp(raw, 'g');
+}
+
+function contains(re, string)
+{
+	return string.match(re) !== null;
+}
+
+function find(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex === re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		out.push({
+			match: result[0],
+			submatches: _elm_lang$core$Native_List.fromArray(subs),
+			index: result.index,
+			number: number
+		});
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+function replace(n, re, replacer, string)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		return replacer({
+			match: match,
+			submatches: _elm_lang$core$Native_List.fromArray(submatches),
+			index: arguments[arguments.length - 2],
+			number: count
+		});
+	}
+	return string.replace(re, jsReplacer);
+}
+
+function split(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	if (n === Infinity)
+	{
+		return _elm_lang$core$Native_List.fromArray(str.split(re));
+	}
+	var string = str;
+	var result;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		if (!(result = re.exec(string))) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+return {
+	regex: regex,
+	caseInsensitive: caseInsensitive,
+	escape: escape,
+
+	contains: F2(contains),
+	find: F3(find),
+	replace: F4(replace),
+	split: F3(split)
+};
+
+}();
+
 var _elm_lang$core$Tuple$mapSecond = F2(
 	function (func, _p0) {
 		var _p1 = _p0;
@@ -6547,6 +6733,23 @@ var _elm_lang$core$Random$cmdMap = F2(
 			A2(_elm_lang$core$Random$map, func, _p79._0));
 	});
 _elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
+
+var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
+var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
+var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
+var _elm_lang$core$Regex$contains = _elm_lang$core$Native_Regex.contains;
+var _elm_lang$core$Regex$caseInsensitive = _elm_lang$core$Native_Regex.caseInsensitive;
+var _elm_lang$core$Regex$regex = _elm_lang$core$Native_Regex.regex;
+var _elm_lang$core$Regex$escape = _elm_lang$core$Native_Regex.escape;
+var _elm_lang$core$Regex$Match = F4(
+	function (a, b, c, d) {
+		return {match: a, submatches: b, index: c, number: d};
+	});
+var _elm_lang$core$Regex$Regex = {ctor: 'Regex'};
+var _elm_lang$core$Regex$AtMost = function (a) {
+	return {ctor: 'AtMost', _0: a};
+};
+var _elm_lang$core$Regex$All = {ctor: 'All'};
 
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
@@ -9051,17 +9254,339 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _thaterikperson$elm_strftime$Strftime$amPmString = function (date) {
+	return (_elm_lang$core$Native_Utils.cmp(
+		_elm_lang$core$Date$hour(date),
+		11) > 0) ? 'PM' : 'AM';
+};
+var _thaterikperson$elm_strftime$Strftime$twentyFourHourToTwelveHour = function (hour) {
+	return _elm_lang$core$Native_Utils.eq(hour, 0) ? 12 : ((_elm_lang$core$Native_Utils.cmp(hour, 12) > 0) ? (hour - 12) : hour);
+};
+var _thaterikperson$elm_strftime$Strftime$numericMonth = function (date) {
+	var _p0 = _elm_lang$core$Date$month(date);
+	switch (_p0.ctor) {
+		case 'Jan':
+			return 1;
+		case 'Feb':
+			return 2;
+		case 'Mar':
+			return 3;
+		case 'Apr':
+			return 4;
+		case 'May':
+			return 5;
+		case 'Jun':
+			return 6;
+		case 'Jul':
+			return 7;
+		case 'Aug':
+			return 8;
+		case 'Sep':
+			return 9;
+		case 'Oct':
+			return 10;
+		case 'Nov':
+			return 11;
+		default:
+			return 12;
+	}
+};
+var _thaterikperson$elm_strftime$Strftime$abbreviatedMonth = function (date) {
+	var _p1 = _elm_lang$core$Date$month(date);
+	switch (_p1.ctor) {
+		case 'Jan':
+			return 'Jan';
+		case 'Feb':
+			return 'Feb';
+		case 'Mar':
+			return 'Mar';
+		case 'Apr':
+			return 'Apr';
+		case 'May':
+			return 'May';
+		case 'Jun':
+			return 'Jun';
+		case 'Jul':
+			return 'Jul';
+		case 'Aug':
+			return 'Aug';
+		case 'Sep':
+			return 'Sep';
+		case 'Oct':
+			return 'Oct';
+		case 'Nov':
+			return 'Nov';
+		default:
+			return 'Dec';
+	}
+};
+var _thaterikperson$elm_strftime$Strftime$fullMonth = function (date) {
+	var _p2 = _elm_lang$core$Date$month(date);
+	switch (_p2.ctor) {
+		case 'Jan':
+			return 'January';
+		case 'Feb':
+			return 'February';
+		case 'Mar':
+			return 'March';
+		case 'Apr':
+			return 'April';
+		case 'May':
+			return 'May';
+		case 'Jun':
+			return 'June';
+		case 'Jul':
+			return 'July';
+		case 'Aug':
+			return 'August';
+		case 'Sep':
+			return 'September';
+		case 'Oct':
+			return 'October';
+		case 'Nov':
+			return 'November';
+		default:
+			return 'December';
+	}
+};
+var _thaterikperson$elm_strftime$Strftime$abbreviatedWeekday = function (date) {
+	var _p3 = _elm_lang$core$Date$dayOfWeek(date);
+	switch (_p3.ctor) {
+		case 'Mon':
+			return 'Mon';
+		case 'Tue':
+			return 'Tue';
+		case 'Wed':
+			return 'Wed';
+		case 'Thu':
+			return 'Thu';
+		case 'Fri':
+			return 'Fri';
+		case 'Sat':
+			return 'Sat';
+		default:
+			return 'Sun';
+	}
+};
+var _thaterikperson$elm_strftime$Strftime$fullWeekday = function (date) {
+	var _p4 = _elm_lang$core$Date$dayOfWeek(date);
+	switch (_p4.ctor) {
+		case 'Mon':
+			return 'Monday';
+		case 'Tue':
+			return 'Tuesday';
+		case 'Wed':
+			return 'Wednesday';
+		case 'Thu':
+			return 'Thursday';
+		case 'Fri':
+			return 'Friday';
+		case 'Sat':
+			return 'Saturday';
+		default:
+			return 'Sunday';
+	}
+};
+var _thaterikperson$elm_strftime$Strftime$numberWeekday = function (date) {
+	var _p5 = _elm_lang$core$Date$dayOfWeek(date);
+	switch (_p5.ctor) {
+		case 'Sun':
+			return '0';
+		case 'Mon':
+			return '1';
+		case 'Tue':
+			return '2';
+		case 'Wed':
+			return '3';
+		case 'Thu':
+			return '4';
+		case 'Fri':
+			return '5';
+		default:
+			return '6';
+	}
+};
+var _thaterikperson$elm_strftime$Strftime$zeroPad = function (number) {
+	return (_elm_lang$core$Native_Utils.cmp(number, 10) < 0) ? A2(
+		_elm_lang$core$Basics_ops['++'],
+		'0',
+		_elm_lang$core$Basics$toString(number)) : _elm_lang$core$Basics$toString(number);
+};
+var _thaterikperson$elm_strftime$Strftime$format = F2(
+	function (fmt, date) {
+		return A4(
+			_elm_lang$core$Regex$replace,
+			_elm_lang$core$Regex$All,
+			_elm_lang$core$Regex$regex('%S'),
+			function (_p6) {
+				return _thaterikperson$elm_strftime$Strftime$zeroPad(
+					_elm_lang$core$Date$second(date));
+			},
+			A4(
+				_elm_lang$core$Regex$replace,
+				_elm_lang$core$Regex$All,
+				_elm_lang$core$Regex$regex('%-S'),
+				function (_p7) {
+					return _elm_lang$core$Basics$toString(
+						_elm_lang$core$Date$second(date));
+				},
+				A4(
+					_elm_lang$core$Regex$replace,
+					_elm_lang$core$Regex$All,
+					_elm_lang$core$Regex$regex('%M'),
+					function (_p8) {
+						return _thaterikperson$elm_strftime$Strftime$zeroPad(
+							_elm_lang$core$Date$minute(date));
+					},
+					A4(
+						_elm_lang$core$Regex$replace,
+						_elm_lang$core$Regex$All,
+						_elm_lang$core$Regex$regex('%-M'),
+						function (_p9) {
+							return _elm_lang$core$Basics$toString(
+								_elm_lang$core$Date$minute(date));
+						},
+						A4(
+							_elm_lang$core$Regex$replace,
+							_elm_lang$core$Regex$All,
+							_elm_lang$core$Regex$regex('%p'),
+							function (_p10) {
+								return _thaterikperson$elm_strftime$Strftime$amPmString(date);
+							},
+							A4(
+								_elm_lang$core$Regex$replace,
+								_elm_lang$core$Regex$All,
+								_elm_lang$core$Regex$regex('%I'),
+								function (_p11) {
+									return _thaterikperson$elm_strftime$Strftime$zeroPad(
+										_thaterikperson$elm_strftime$Strftime$twentyFourHourToTwelveHour(
+											_elm_lang$core$Date$hour(date)));
+								},
+								A4(
+									_elm_lang$core$Regex$replace,
+									_elm_lang$core$Regex$All,
+									_elm_lang$core$Regex$regex('%-I'),
+									function (_p12) {
+										return _elm_lang$core$Basics$toString(
+											_thaterikperson$elm_strftime$Strftime$twentyFourHourToTwelveHour(
+												_elm_lang$core$Date$hour(date)));
+									},
+									A4(
+										_elm_lang$core$Regex$replace,
+										_elm_lang$core$Regex$All,
+										_elm_lang$core$Regex$regex('%H'),
+										function (_p13) {
+											return _thaterikperson$elm_strftime$Strftime$zeroPad(
+												_elm_lang$core$Date$hour(date));
+										},
+										A4(
+											_elm_lang$core$Regex$replace,
+											_elm_lang$core$Regex$All,
+											_elm_lang$core$Regex$regex('%-H'),
+											function (_p14) {
+												return _elm_lang$core$Basics$toString(
+													_elm_lang$core$Date$hour(date));
+											},
+											A4(
+												_elm_lang$core$Regex$replace,
+												_elm_lang$core$Regex$All,
+												_elm_lang$core$Regex$regex('%Y'),
+												function (_p15) {
+													return _elm_lang$core$Basics$toString(
+														_elm_lang$core$Date$year(date));
+												},
+												A4(
+													_elm_lang$core$Regex$replace,
+													_elm_lang$core$Regex$All,
+													_elm_lang$core$Regex$regex('%y'),
+													function (_p16) {
+														return A2(
+															_elm_lang$core$String$right,
+															2,
+															_elm_lang$core$Basics$toString(
+																_elm_lang$core$Date$year(date)));
+													},
+													A4(
+														_elm_lang$core$Regex$replace,
+														_elm_lang$core$Regex$All,
+														_elm_lang$core$Regex$regex('%d'),
+														function (_p17) {
+															return _thaterikperson$elm_strftime$Strftime$zeroPad(
+																_elm_lang$core$Date$day(date));
+														},
+														A4(
+															_elm_lang$core$Regex$replace,
+															_elm_lang$core$Regex$All,
+															_elm_lang$core$Regex$regex('%-d'),
+															function (_p18) {
+																return _elm_lang$core$Basics$toString(
+																	_elm_lang$core$Date$day(date));
+															},
+															A4(
+																_elm_lang$core$Regex$replace,
+																_elm_lang$core$Regex$All,
+																_elm_lang$core$Regex$regex('%w'),
+																function (_p19) {
+																	return _thaterikperson$elm_strftime$Strftime$numberWeekday(date);
+																},
+																A4(
+																	_elm_lang$core$Regex$replace,
+																	_elm_lang$core$Regex$All,
+																	_elm_lang$core$Regex$regex('%A'),
+																	function (_p20) {
+																		return _thaterikperson$elm_strftime$Strftime$fullWeekday(date);
+																	},
+																	A4(
+																		_elm_lang$core$Regex$replace,
+																		_elm_lang$core$Regex$All,
+																		_elm_lang$core$Regex$regex('%a'),
+																		function (_p21) {
+																			return _thaterikperson$elm_strftime$Strftime$abbreviatedWeekday(date);
+																		},
+																		A4(
+																			_elm_lang$core$Regex$replace,
+																			_elm_lang$core$Regex$All,
+																			_elm_lang$core$Regex$regex('%m'),
+																			function (_p22) {
+																				return _thaterikperson$elm_strftime$Strftime$zeroPad(
+																					_thaterikperson$elm_strftime$Strftime$numericMonth(date));
+																			},
+																			A4(
+																				_elm_lang$core$Regex$replace,
+																				_elm_lang$core$Regex$All,
+																				_elm_lang$core$Regex$regex('%-m'),
+																				function (_p23) {
+																					return _elm_lang$core$Basics$toString(
+																						_thaterikperson$elm_strftime$Strftime$numericMonth(date));
+																				},
+																				A4(
+																					_elm_lang$core$Regex$replace,
+																					_elm_lang$core$Regex$All,
+																					_elm_lang$core$Regex$regex('%B'),
+																					function (_p24) {
+																						return _thaterikperson$elm_strftime$Strftime$fullMonth(date);
+																					},
+																					A4(
+																						_elm_lang$core$Regex$replace,
+																						_elm_lang$core$Regex$All,
+																						_elm_lang$core$Regex$regex('%b'),
+																						function (_p25) {
+																							return _thaterikperson$elm_strftime$Strftime$abbreviatedMonth(date);
+																						},
+																						fmt))))))))))))))))))));
+	});
+
 var _user$project$Spelling$check = _elm_lang$core$Native_Platform.outgoingPort(
 	'check',
 	function (v) {
-		return v;
+		return [v._0, v._1];
 	});
 var _user$project$Spelling$suggestions = _elm_lang$core$Native_Platform.incomingPort(
 	'suggestions',
 	_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string));
 var _user$project$Spelling$Model = F3(
 	function (a, b, c) {
-		return {number: a, word: b, suggestions: c};
+		return {number: a, tstamp: b, suggestions: c};
 	});
 var _user$project$Spelling$init = {
 	ctor: '_Tuple2',
@@ -9072,13 +9597,70 @@ var _user$project$Spelling$init = {
 		{ctor: '[]'}),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
+var _user$project$Spelling$Tick = function (a) {
+	return {ctor: 'Tick', _0: a};
+};
 var _user$project$Spelling$Suggest = function (a) {
 	return {ctor: 'Suggest', _0: a};
 };
 var _user$project$Spelling$subscriptions = function (model) {
-	return _user$project$Spelling$suggestions(_user$project$Spelling$Suggest);
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: _user$project$Spelling$suggestions(_user$project$Spelling$Suggest),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second * 2, _user$project$Spelling$Tick),
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$Spelling$Check = {ctor: 'Check'};
+var _user$project$Spelling$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$button,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onClick(_user$project$Spelling$Check),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Check'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							A2(_elm_lang$core$String$join, ', ', model.suggestions)),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								_elm_lang$core$Basics$toString(model.number)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
 var _user$project$Spelling$Rnd = function (a) {
 	return {ctor: 'Rnd', _0: a};
 };
@@ -9086,16 +9668,6 @@ var _user$project$Spelling$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
 		switch (_p0.ctor) {
-			case 'Change':
-				return {
-					ctor: '_Tuple2',
-					_0: A3(
-						_user$project$Spelling$Model,
-						0,
-						_p0._0,
-						{ctor: '[]'}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
 			case 'Check':
 				return {
 					ctor: '_Tuple2',
@@ -9113,9 +9685,10 @@ var _user$project$Spelling$update = F2(
 						{
 							number: A2(_elm_lang$core$Debug$log, 'number', _p0._0)
 						}),
-					_1: _user$project$Spelling$check(model.number)
+					_1: _user$project$Spelling$check(
+						{ctor: '_Tuple2', _0: model.number, _1: model.tstamp})
 				};
-			default:
+			case 'Suggest':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9123,67 +9696,23 @@ var _user$project$Spelling$update = F2(
 						{suggestions: _p0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			default:
+				var t = A2(
+					_thaterikperson$elm_strftime$Strftime$format,
+					'%a %d %Y, %-H:%-M:%-S',
+					_elm_lang$core$Date$fromTime(_p0._0));
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{tstamp: t}),
+					_1: A2(
+						_elm_lang$core$Random$generate,
+						_user$project$Spelling$Rnd,
+						A2(_elm_lang$core$Random$int, -100, 100))
+				};
 		}
 	});
-var _user$project$Spelling$Change = function (a) {
-	return {ctor: 'Change', _0: a};
-};
-var _user$project$Spelling$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$input,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onInput(_user$project$Spelling$Change),
-					_1: {ctor: '[]'}
-				},
-				{ctor: '[]'}),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$button,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(_user$project$Spelling$Check),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('Check'),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(
-								A2(_elm_lang$core$String$join, ', ', model.suggestions)),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text(
-									_elm_lang$core$Basics$toString(model.number)),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		});
-};
 var _user$project$Spelling$main = _elm_lang$html$Html$program(
 	{init: _user$project$Spelling$init, view: _user$project$Spelling$view, update: _user$project$Spelling$update, subscriptions: _user$project$Spelling$subscriptions})();
 
